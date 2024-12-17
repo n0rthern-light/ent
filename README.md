@@ -6,4 +6,4 @@ BMP Entropy image generator from a file
 The entropy image will be generated as `<input-file>.bmp`
 
 ### Example entropy image
-asdf
+![ent_example](https://github.com/user-attachments/assets/1dfefdc7-0741-4fb6-81d5-cc236a2199d5)
