@@ -78,19 +78,20 @@ def check_file_entropy(input_file, window_size=1024, image_height=32, show_spike
 
     num_windows = len(data) // window_size
     entropy_values = []
-    prev_ent = None
     for i in range(num_windows):
         window = data[i * window_size: (i + 1) * window_size]
         entropy = calculate_entropy(window)
-
-        if len(entropy_values) >= 2 and show_spikes == True:
-            mean_entropy = statistics.mean(entropy_values)
-            stddev_entropy = statistics.stdev(entropy_values)
+        entropy_values.append(entropy)
+        
+    prev_ent = None
+    if len(entropy_values) >= 2 and show_spikes == True:
+        mean_entropy = statistics.mean(entropy_values)
+        stddev_entropy = statistics.stdev(entropy_values)
+        for i in range(num_windows):
+            entropy = entropy_values[i]
             if prev_ent != None and entropy > mean_entropy + (2 * stddev_entropy):
                 print(f"0x{(i*window_size):x} (size: 0x{window_size:x}): Entropy spike from {prev_ent:.2f} to {entropy:.2f}")
-
-        entropy_values.append(entropy)
-        prev_ent = entropy
+            prev_ent = entropy
 
     output_file = f"{os.path.basename(input_file)}.bmp"
 
