@@ -11,7 +11,7 @@ The entropy image will be generated as `<input-file>.bmp`
 ### Print spikes
 Pass `--spikes` option to enable entropy spike detection based on standard deviation 
 ```zsh
-$ ent.py i_am_quite_large.bin --spikes                  [15:19:54]
+$ ent.py i_am_quite_large.bin --spikes
 0x12000 (size: 0x400): Entropy spike from 2.85 to 3.70
 0x12400 (size: 0x400): Entropy spike from 3.70 to 6.06
 0x555000 (size: 0x400): Entropy spike from 2.85 to 4.14
