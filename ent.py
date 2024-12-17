@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+import argparse
 import sys
 import math
 import struct
 import os
+import statistics
 
 def calculate_entropy(data):
     if not data:
@@ -70,26 +72,38 @@ def write_bmp_image(width, height, entropy_values, output_file):
         f.write(dib_header)
         f.write(pixel_data)
 
-def generate_entropy_bmp(input_file, window_size=1024, image_height=32):
+def check_file_entropy(input_file, window_size=1024, image_height=32, show_spikes=True):
     with open(input_file, "rb") as f:
         data = f.read()
 
     num_windows = len(data) // window_size
     entropy_values = []
+    prev_ent = None
     for i in range(num_windows):
         window = data[i * window_size: (i + 1) * window_size]
         entropy = calculate_entropy(window)
+
+        if len(entropy_values) >= 2 and show_spikes == True:
+            mean_entropy = statistics.mean(entropy_values)
+            stddev_entropy = statistics.stdev(entropy_values)
+            if prev_ent != None and entropy > mean_entropy + (2 * stddev_entropy):
+                print(f"0x{(i*window_size):x} (size: 0x{window_size:x}): Entropy spike from {prev_ent:.2f} to {entropy:.2f}")
+
         entropy_values.append(entropy)
+        prev_ent = entropy
 
     output_file = f"{os.path.basename(input_file)}.bmp"
 
     write_bmp_image(len(entropy_values), image_height, entropy_values, output_file)
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: ent.py <input_file>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Process file and generate entropy chart.")
+    parser.add_argument("input_file", type=str, help="Path to the input file")
+    parser.add_argument("--size", type=int, default=1024, help="Size of the window for entropy calculation for single PX of width in bytes (default: 1024)")
+    parser.add_argument("--height", type=int, default=32, help="Height of the output image (default: 32)")
+    parser.add_argument("--spikes", action="store_true", help="Display entropy spikes in stdout (default: False)")
 
-    input_file = sys.argv[1]
-    generate_entropy_bmp(input_file)
+    args = parser.parse_args()
+
+    check_file_entropy(args.input_file, window_size=args.size, image_height=args.height, show_spikes=args.spikes)
 
