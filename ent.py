@@ -6,6 +6,8 @@ import math
 import struct
 import os
 import statistics
+import subprocess
+import platform
 
 def calculate_entropy(data):
     if not data:
@@ -72,6 +74,9 @@ def write_bmp_image(width, height, entropy_values, output_file):
         f.write(dib_header)
         f.write(pixel_data)
 
+def get_output_file_path(input_file):
+    return f"{input_file}.bmp"
+
 def check_file_entropy(input_file, window_size=1024, image_height=32, show_spikes=True):
     with open(input_file, "rb") as f:
         data = f.read()
@@ -93,9 +98,18 @@ def check_file_entropy(input_file, window_size=1024, image_height=32, show_spike
                 print(f"0x{(i*window_size):x} (size: 0x{window_size:x}): Entropy spike from {prev_ent:.2f} to {entropy:.2f}")
             prev_ent = entropy
 
-    output_file = f"{os.path.basename(input_file)}.bmp"
-
+    output_file = get_output_file_path(input_file)
     write_bmp_image(len(entropy_values), image_height, entropy_values, output_file)
+
+def open_image_in_os(input_file):
+    output_file = get_output_file_path(input_file)
+    if platform.system() == "Windows":
+        subprocess.run(["start", output_file], shell=True)
+    elif platform.system() == "Darwin":
+        subprocess.run(["open", output_file])
+    else:
+        subprocess.run(["xdg-open", output_file])
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Process file and generate entropy chart.")
@@ -103,8 +117,11 @@ if __name__ == "__main__":
     parser.add_argument("--size", type=int, default=1024, help="Size of the window for entropy calculation for single PX of width in bytes (default: 1024)")
     parser.add_argument("--height", type=int, default=32, help="Height of the output image (default: 32)")
     parser.add_argument("--spikes", action="store_true", help="Display entropy spikes in stdout (default: False)")
+    parser.add_argument("--open", action="store_true", help="Automatically open the result image in default image viewer (default: False)")
 
     args = parser.parse_args()
 
     check_file_entropy(args.input_file, window_size=args.size, image_height=args.height, show_spikes=args.spikes)
 
+    if args.open == True:
+        open_image_in_os(args.input_file)
