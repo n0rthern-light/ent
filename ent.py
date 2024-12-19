@@ -75,7 +75,7 @@ def write_bmp_image(width, height, entropy_values, output_file):
         f.write(pixel_data)
 
 def get_output_file_path(input_file):
-    return f"{input_file}.bmp"
+    return f"{input_file}.ent.bmp"
 
 def check_file_entropy(input_file, window_size=1024, image_height=32, show_spikes=True):
     with open(input_file, "rb") as f:
